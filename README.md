@@ -13,7 +13,7 @@ project's content.
 
 | Folder | What it does |
 |---|---|
-| `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus 25 editor scripts |
+| `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus 26 editor scripts |
 | `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps |
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
@@ -52,6 +52,7 @@ Some of the scripts:
 | `make_look_materials.py` | Builds two post-process materials: a soft 1-bit dither in the style of Return of the Obra Dinn, and a PS2-era look |
 | `material_stats.py` | Pixel-shader instruction count, a quick check that a material compiled |
 | `screenshot.py`, `console.py` | High-res screenshot, read or run console variables |
+| `setup_ui.py` | Sets up CommonUI in one run: click and back input actions with their mapping context, the input data asset, controller data for keyboard and mouse, an Xbox-style gamepad and the Steam Deck (glyphs from Kenney's CC0 input prompts), and Blueprint children of a C++ root widget, pause screen and HUD. The paths and class names come from the game it was written for; change them for yours |
 
 ## citygen
 
