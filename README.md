@@ -14,11 +14,11 @@ project's content.
 | Folder | What it does |
 |---|---|
 | `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus 26 editor scripts |
-| `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps |
+| `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps, and size statistics of isolated buildings around any point |
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
-| `meshkit/` | Small procedural mesh kit: primitives, walls with openings, shingle and corrugated roofs, GLB writer |
+| `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
 
 No pip packages for anything except `citygen/`, which needs `shapely` and `numpy`, and `meshkit/`, which needs `numpy`.
 
@@ -58,6 +58,8 @@ Some of the scripts:
 | `set_camera.py`, `shots.py` | Move the editor camera and save one screenshot per view, from a list or an orbit |
 | `import_manifest.py` | Import the GLB files listed in a JSON manifest as static meshes with LODs, collision and tinted material instances |
 | `make_light_functions.py` | Build light-function materials (drifting noise, flicker) and instances from a JSON spec |
+| `place_layout.py` | Put a layout table into a level: unique pieces as static actors, repeated ones as instanced meshes through a small Blueprint |
+| `build_atmosphere.py` | Add sky, moon and sky light, exposure, fog, lanterns and a player start to the open level from the sections present in a JSON spec |
 | `setup_ui.py` | Sets up CommonUI in one run: click and back input actions with their mapping context, the input data asset, controller data for keyboard and mouse, an Xbox-style gamepad and the Steam Deck (glyphs from Kenney's CC0 input prompts), and Blueprint children of a C++ root widget, pause screen and HUD. The paths and class names come from the game it was written for; change them for yours |
 
 ## citygen
@@ -77,12 +79,31 @@ footprints on two layers (`EDIFICIO_OSM`, `EDIFICIO_MS`) as closed polylines you
 SketchUp. Microsoft footprints that overlap an OSM one by 20% or more are dropped. Neither source gave
 building heights for the town it was built for, so heights are left to you.
 
+`citygen/footprint_stats.py` answers a different question: how big are the isolated houses and sheds around a point? Give it one or more `name:lat,lon` centres and it prints the area quartiles and the long and short side medians for small and large isolated buildings, using the same Overpass data.
+
+```
+python citygen/citygen/footprint_stats.py --centre town:-39.36,-71.59 --radius 5000
+```
+
 `preview_dxf.py` renders any layer of the DXF to PNG, so you can check the geometry before trusting
 it. `flat_svg.py` writes a flat SVG map of streets and footprints.
 
 ## meshkit
 
-A few hundred lines of numpy that turn a JSON description into low-poly meshes. `parts.build_piece` takes a list of primitives (`box`, `cyl`, `extrude` for any outline including concave ones, `tube`, `wall` with door and window openings, `roof_slope` in shingle or corrugated style, `repeat`) and returns one mesh per group. `write_glb` writes a GLB with flat normals, box-projected UVs and one named material per colour.
+A few hundred lines of numpy that turn a folder of JSON specs into low-poly meshes, a placement table and a manifest. `parts.build_piece` takes a list of primitives (`box`, `cyl`, `extrude` for any outline including concave ones, `tube`, `wall` with door and window openings, `roof_slope` in shingle or corrugated style, `repeat`) and returns one mesh per group. `write_glb` writes a GLB with flat normals, box-projected UVs and one named material per colour.
+
+`trees.py` builds a tree from numbers: height, trunk radius, where the crown starts, how many whorls and how many branches per whorl, branch length and thickness from the bottom whorl to the top, how steeply branches rise and how far they curl up at the tip, and a list of LOD levels. It returns the trunk and the crown as two meshes, so the trunk can carry collision and the crown can stay without. `examples/minimal/trees.json` holds three growth stages of a monkey puzzle tree (Araucaria araucana), which is the shape it was tuned on. Nothing in the code is specific to that species.
+
+`terrain.py` makes one static terrain mesh with flat pads under buildings and a coarser grid far away, and drapes dirt paths over the exact triangles of that mesh so they never clip. `layout.py` turns building floor plans, props, a fence run and a scattered forest into placement rows. `build_world.py` ties them together:
+
+```
+python meshkit/build_world.py --spec meshkit/examples/minimal --out out
+python meshkit/preview.py --spec meshkit/examples/minimal --out out/preview.glb --ground
+```
+
+The spec folder holds `pieces.json`, `buildings.json`, `trees.json`, `world.json`, `content.json` and `materials.json`; the example is a small hut, a fence and a forest. Output is `out/meshes/*.glb`, `out/layout.csv` (centimetres, Z up, already mirrored for Unreal) and `out/manifest.json`. The same seed gives byte-identical files.
+
+For a single piece:
 
 ```
 import sys
@@ -93,7 +114,7 @@ piece = parts.build_piece({"parts": [{"t": "box", "m": "wood", "size": [1, 1, 1]
 meshkit.write_glb(piece["main"], "box.glb")
 ```
 
-Units are metres and Z is up; the GLB is written Y-up. Unreal mirrors Y when it imports a glTF, so convert placement tables before using them in the editor.
+Units are metres and Z is up; the GLB is written Y-up. Unreal mirrors Y when it imports a glTF, which is why `layout.csv` is already converted.
 
 ## Importing, light functions and screenshots
 
@@ -101,6 +122,13 @@ Units are metres and Z is up; the GLB is written Y-up. Unreal mirrors Y when it 
 
 ```
 python ue_remote/ue_remote.py exec MyProject -f ue_remote/scripts/import_manifest.py --arg manifest=out/manifest.json --arg materials=spec/materials.json --arg root=/Game/MyProject
+```
+
+`place_layout.py` reads `out/layout.csv` and the manifest, optionally creates and saves a level (`map=`), and places everything. `build_atmosphere.py` then adds whichever of `sky`, `night`, `fog`, `lanterns` and `player_start` the manifest's `world` section contains, so a project without a sky asset just skips that part. If the Screen Space Fog Scattering plugin is not loaded it leaves its settings alone and says so.
+
+```
+python ue_remote/ue_remote.py exec MyProject -f ue_remote/scripts/place_layout.py --arg manifest=out/manifest.json --arg layout=out/layout.csv --arg root=/Game/MyProject --arg map=/Game/MyProject/Maps/L_Main
+python ue_remote/ue_remote.py exec MyProject -f ue_remote/scripts/build_atmosphere.py --arg manifest=out/manifest.json --arg root=/Game/MyProject --arg map=/Game/MyProject/Maps/L_Main
 ```
 
 `make_light_functions.py` builds two light-function materials, a drifting 3D noise and a two-sine flicker, plus one instance per entry in a JSON list. Put the drift instance on a directional light and volumetric fog shows moving patches of light; put the flicker on a point light and the glow around it pulses. In UE 5.5 the materials compile and every node is wired to the output. Nobody has confirmed the motion by eye yet.
