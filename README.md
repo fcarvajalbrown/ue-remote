@@ -13,7 +13,7 @@ project's content.
 
 | Folder | What it does |
 |---|---|
-| `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus 26 editor scripts |
+| `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus a library of editor scripts |
 | `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps, and size statistics of isolated buildings around any point |
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
