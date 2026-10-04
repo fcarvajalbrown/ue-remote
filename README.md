@@ -51,7 +51,7 @@ Some of the scripts:
 | `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
 | `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
 | `export_textures.py` | Export textures to PNG |
-| `build_editor.bat` | Command line build of a project's editor target, `build_editor.bat path	o\Project.uproject`, with `UE_ROOT` pointing at the engine |
+| `build_editor.bat` | Command line build of a project's editor target, `build_editor.bat path\to\Project.uproject`, with `UE_ROOT` pointing at the engine |
 | `move_assets.py`, `move_folder.py` | Move assets and folders |
 | `fix_redirectors.py` | Resave whatever still points at a redirector, then delete the redirectors nothing references; preview first |
 | `delete_assets.py` | Delete folders or assets after a read-only preview. It resaves anything still pointing at a redirector, removes redirectors that would be left dangling, refuses when a live asset depends on the target, and clears the empty folders. `fix_maps=1` also resaves the maps that reference a redirector |
