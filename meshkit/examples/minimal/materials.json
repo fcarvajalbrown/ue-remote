@@ -1,0 +1,9 @@
+{
+  "parents": {"default": "MI_BlockOut_Wood", "bark": "MI_BlockOut_Rock", "foliage": "MI_BlockOut_Grass", "stone": "MI_BlockOut_Rock", "dirt": "MI_BlockOut_Dirt", "grass": "MI_BlockOut_Grass", "calamina": "MI_BlockOut_Metal", "metal": "MI_BlockOut_Metal"},
+  "tints": {
+    "bark": [0.30, 0.22, 0.17], "foliage": [0.10, 0.27, 0.16], "wood": [0.46, 0.34, 0.22], "shingle": [0.22, 0.15, 0.10],
+    "calamina": [0.45, 0.47, 0.50], "clay": [0.55, 0.32, 0.22], "stone": [0.40, 0.39, 0.37], "dirt": [0.40, 0.30, 0.20],
+    "grass": [0.20, 0.28, 0.12], "dark": [0.04, 0.03, 0.025], "metal": [0.14, 0.14, 0.15], "straw": [0.60, 0.50, 0.25],
+    "cloth": [0.45, 0.20, 0.17], "wall": [0.50, 0.40, 0.28]
+  }
+}

@@ -1,0 +1,133 @@
+{
+ "hut": {
+  "elevation": 0.2,
+  "thickness": 0.1,
+  "pitch": 32,
+  "walls": [
+   {
+    "id": "front",
+    "from": [
+     -2.0,
+     -1.5
+    ],
+    "to": [
+     2.0,
+     -1.5
+    ],
+    "height": 2.2,
+    "siding": "outside",
+    "extend": true,
+    "openings": [
+     {
+      "at": 2.0,
+      "width": 0.95,
+      "sill": 0,
+      "head": 1.95
+     }
+    ]
+   },
+   {
+    "id": "east",
+    "from": [
+     2.0,
+     -1.5
+    ],
+    "to": [
+     2.0,
+     1.5
+    ],
+    "height": 2.2,
+    "siding": "outside",
+    "extend": true,
+    "openings": []
+   },
+   {
+    "id": "back",
+    "from": [
+     2.0,
+     1.5
+    ],
+    "to": [
+     -2.0,
+     1.5
+    ],
+    "height": 2.2,
+    "siding": "outside",
+    "extend": true,
+    "openings": [
+     {
+      "at": 2.0,
+      "width": 0.6,
+      "sill": 1.2,
+      "head": 1.8
+     }
+    ]
+   },
+   {
+    "id": "west",
+    "from": [
+     -2.0,
+     1.5
+    ],
+    "to": [
+     -2.0,
+     -1.5
+    ],
+    "height": 2.2,
+    "siding": "outside",
+    "extend": true,
+    "openings": []
+   }
+  ],
+  "parts": [
+   {
+    "piece": "hut_floor",
+    "at": [
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "piece": "hut_gable",
+    "at": [
+     2.0,
+     0,
+     2.2
+    ]
+   },
+   {
+    "piece": "hut_gable",
+    "at": [
+     -2.0,
+     0,
+     2.2
+    ]
+   },
+   {
+    "piece": "hut_roof",
+    "at": [
+     0,
+     0,
+     2.2
+    ]
+   },
+   {
+    "piece": "barrel",
+    "at": [
+     -1.4,
+     1.0,
+     0.2
+    ]
+   },
+   {
+    "piece": "bale",
+    "at": [
+     1.2,
+     1.0,
+     0.2
+    ]
+   }
+  ]
+ }
+}

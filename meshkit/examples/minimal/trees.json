@@ -1,0 +1,152 @@
+{
+ "juvenile": {
+  "seed": 11,
+  "height": 5.5,
+  "trunk_radius": [
+   0.14,
+   0.04
+  ],
+  "crown_start": 0.12,
+  "whorls": 7,
+  "branches_per_whorl": 5,
+  "branch_length": [
+   1.7,
+   0.4
+  ],
+  "branch_radius": [
+   0.17,
+   0.07
+  ],
+  "elevation_deg": [
+   -8,
+   18
+  ],
+  "curl_deg": 28,
+  "scar_whorls": 0,
+  "leader": 0.9,
+  "lods": [
+   {
+    "points": 5,
+    "sections": 5,
+    "whorl_step": 1,
+    "trunk_sections": 6
+   },
+   {
+    "points": 3,
+    "sections": 4,
+    "whorl_step": 1,
+    "trunk_sections": 5
+   },
+   {
+    "points": 2,
+    "sections": 4,
+    "whorl_step": 2,
+    "trunk_sections": 4
+   }
+  ]
+ },
+ "mature": {
+  "seed": 23,
+  "height": 24.0,
+  "trunk_radius": [
+   0.55,
+   0.3
+  ],
+  "crown_start": 0.74,
+  "whorls": 11,
+  "branches_per_whorl": 6,
+  "branch_length": [
+   6.0,
+   2.4
+  ],
+  "branch_radius": [
+   0.34,
+   0.14
+  ],
+  "elevation_deg": [
+   6,
+   34
+  ],
+  "curl_deg": 40,
+  "scar_whorls": 4,
+  "leader": 2.2,
+  "lods": [
+   {
+    "points": 5,
+    "sections": 5,
+    "whorl_step": 1,
+    "trunk_sections": 10
+   },
+   {
+    "points": 3,
+    "sections": 4,
+    "whorl_step": 1,
+    "trunk_sections": 6
+   },
+   {
+    "points": 2,
+    "sections": 4,
+    "whorl_step": 2,
+    "trunk_sections": 5
+   },
+   {
+    "points": 2,
+    "sections": 3,
+    "whorl_step": 3,
+    "trunk_sections": 4
+   }
+  ]
+ },
+ "old": {
+  "seed": 37,
+  "height": 36.0,
+  "trunk_radius": [
+   0.95,
+   0.5
+  ],
+  "crown_start": 0.76,
+  "whorls": 12,
+  "branches_per_whorl": 7,
+  "branch_length": [
+   8.8,
+   3.4
+  ],
+  "branch_radius": [
+   0.5,
+   0.2
+  ],
+  "elevation_deg": [
+   4,
+   32
+  ],
+  "curl_deg": 42,
+  "scar_whorls": 6,
+  "leader": 3.0,
+  "lods": [
+   {
+    "points": 5,
+    "sections": 5,
+    "whorl_step": 1,
+    "trunk_sections": 12
+   },
+   {
+    "points": 3,
+    "sections": 4,
+    "whorl_step": 1,
+    "trunk_sections": 7
+   },
+   {
+    "points": 2,
+    "sections": 4,
+    "whorl_step": 2,
+    "trunk_sections": 5
+   },
+   {
+    "points": 2,
+    "sections": 3,
+    "whorl_step": 3,
+    "trunk_sections": 4
+   }
+  ]
+ }
+}

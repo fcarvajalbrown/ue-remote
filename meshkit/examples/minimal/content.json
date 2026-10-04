@@ -1,0 +1,38 @@
+{
+ "root": "Example",
+ "mesh_prefix": "SM_",
+ "material_prefix": "MI_Campo_",
+ "core_folder": "Core",
+ "atmosphere_folder": "Atmosphere",
+ "maps_folder": "Maps",
+ "folders": [
+  {
+   "match": "hut_*",
+   "folder": "Hut"
+  },
+  {
+   "match": "araucaria_*",
+   "folder": "Forest"
+  },
+  {
+   "match": "terrain",
+   "folder": "Ground"
+  },
+  {
+   "match": "paths",
+   "folder": "Ground"
+  },
+  {
+   "match": "fence_*",
+   "folder": "Fence"
+  },
+  {
+   "match": "gate",
+   "folder": "Fence"
+  },
+  {
+   "match": "*",
+   "folder": "Props"
+  }
+ ]
+}
