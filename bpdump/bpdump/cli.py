@@ -2,7 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from bpdump import exporter
+from bpdump import exporter, scan
 from bpdump.summary import summarize
 
 DEFAULT_ENGINE = "VER_UE5_5"
@@ -33,6 +33,12 @@ def parse_args(argv):
         step.add_argument("--include", action="append", default=[], help="glob on the relative path, repeatable, for example 'SaveGame/**/*.json'")
     summary = sub.add_parser("summarize")
     summary.add_argument("--out", required=True)
+    sweep = sub.add_parser("scan", help="identify every .uasset and .umap under a folder without UAssetGUI or the editor, one JSON line per asset")
+    sweep.add_argument("--source", required=True, help="a Content folder, a project, or a folder of many projects, read only")
+    sweep.add_argument("--out", required=True, help="JSONL file; assets already in it are skipped, so an interrupted run resumes")
+    sweep.add_argument("--include", action="append", default=[], help="glob on the path relative to --source, repeatable")
+    sweep.add_argument("--refs", action="store_true", help="list the /Game packages each asset references")
+    sweep.add_argument("--names", action="store_true", help="list the spaced names inside each asset, which for a Blueprint are its variables, settings and categories")
     return parser.parse_args(argv)
 
 
@@ -41,6 +47,8 @@ def main(argv=None):
     if args.command == "fetch":
         exporter.fetch()
         return 0
+    if args.command == "scan":
+        return 0 if scan.scan(args.source, args.out, args.include, args.refs, args.names) else 1
     if args.command in ("export", "run"):
         ok = exporter.export_folder(args.source, args.out, args.engine, args.force, args.include)
         if args.command == "run":

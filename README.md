@@ -19,7 +19,7 @@ project's content.
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
 | `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
-| `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, no editor needed |
+| `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, and scans whole folders of projects to identify every asset by class, parent, skeleton and source file, no editor needed |
 | `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
 
 No pip packages for anything except `citygen/`, which needs `shapely` and `numpy`, and `meshkit/`, which needs `numpy`.
@@ -164,6 +164,18 @@ python bpdump/bpdump.py run --source MyProject/Content/Blueprints --out dump
 ```
 
 `fetch` saves the binary under `bpdump/.cache`, or under the folder in `UASSETGUI_DIR` if you set it. `run` writes `dump/json/` with the full export and `dump/summary/` with one Markdown file per Blueprint listing its parent class and variables. `export` and `summarize` do the two halves separately. `--include` takes a glob on the relative path and can repeat. Tested on one Blueprint here, a sky actor, and the summary listed its variables correctly.
+
+`scan` is the fast pass for whole drives of old projects. Standard library only, no UAssetGUI, no editor, every asset type. It walks a Content folder, a project or a folder of many projects, skips `DerivedDataCache`, `Intermediate`, `Saved` and `Binaries`, and writes one JSON line per `.uasset` or `.umap`:
+
+```
+python bpdump/bpdump.py scan --source "D:/Old Projects" --out old_projects.jsonl --refs --names
+```
+
+Each line holds the project name and its `EngineAssociation`, the asset's class read from the package's export and import tables, the parent and native parent class of a Blueprint, the skeleton it uses, whether it has Mixamo bones, the engine version it was saved with, the source file path its import data recorded, and its size. `--refs` adds the `/Game` packages it references; `--names` adds the spaced names inside it, which for a Blueprint are its variables, settings and categories. Assets already in the output file are skipped, so an interrupted run picks up where it stopped. `class_from` says whether the class came from the export table or, for a package the parser cannot read, from a string search of its asset registry data. Run on 16,869 assets across eleven projects saved between UE 4.13 and 5.5: every class came from the export table, in about six minutes from a cold disk.
+
+```
+python bpdump/tests/test_scan.py
+```
 
 ## The rest
 
