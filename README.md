@@ -15,7 +15,7 @@ project's content.
 |---|---|
 | `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus a library of editor scripts |
 | `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps, and size statistics of isolated buildings around any point |
-| `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials; `downsize.py` shrinks exported images to the caps of a `texture_budget` spec with Lanczos filtering, keeps alpha, and renormalizes normal maps |
+| `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials; `hdri_match.py` ranks Poly Haven HDRIs (CC0) by how close their sky is to the sky in a reference image (brightness, cloud contrast, saturation, cool tint); `downsize.py` shrinks exported images to the caps of a `texture_budget` spec with Lanczos filtering, keeps alpha, and renormalizes normal maps |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
 | `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
@@ -71,7 +71,7 @@ Some of the scripts:
 | `import_manifest.py` | Import the GLB files listed in a JSON manifest as static meshes with LODs, collision and tinted material instances |
 | `make_light_functions.py` | Build light-function materials (drifting noise, flicker) and instances from a JSON spec |
 | `place_layout.py` | Put a layout table into a level: unique pieces as static actors, repeated ones as instanced meshes through a small Blueprint |
-| `build_atmosphere.py` | Add sky, moon and sky light, exposure, fog, lanterns and a player start to the open level from the sections present in a JSON spec |
+| `build_atmosphere.py` | Add sky, moon and sky light, exposure, fog, lanterns and a player start to the open level from the sections present in a JSON spec. The `sky_light`, `height_fog`, `sky_atmosphere` and `post_process` sections take raw engine property names (colours, vectors and enum names converted, post-process override flags set) for copying a look from a reference; a sky light whose cubemap is missing falls back to a scene capture with a warning |
 | `setup_ui.py` | Sets up CommonUI in one run: click and back input actions with their mapping context, the input data asset, controller data for keyboard and mouse, an Xbox-style gamepad and the Steam Deck (glyphs from Kenney's CC0 input prompts), and Blueprint children of a C++ root widget, pause screen and HUD. The paths and class names come from the game it was written for; change them for yours |
 
 ## citygen

@@ -3,13 +3,13 @@ import json
 import unreal
 
 manifest = json.load(open(ARGS["manifest"][0], encoding="utf-8"))
-root = ARGS["root"][0].rstrip("/")
+root = ARGS.get("root", ["/Game"])[0].rstrip("/")
 map_path = ARGS.get("map", [None])[0]
 ground_label = ARGS.get("ground_label", ["terrain"])[0]
 world_spec = manifest["world"]
-content = manifest["content"]
+content = manifest.get("content", {})
 folder = f"{world_spec.get('folder_root', 'World')}/Atmosphere"
-function_folder = f"{root}/{content['atmosphere_folder']}"
+function_folder = f"{root}/{content.get('atmosphere_folder', '')}"
 
 library = unreal.EditorAssetLibrary
 actors_library = unreal.EditorLevelLibrary
@@ -173,7 +173,88 @@ def place_player_start():
     label(start, "PlayerStart")
 
 
+def convert(current, value):
+    if isinstance(current, unreal.Color):
+        return unreal.Color(r=int(value[0]), g=int(value[1]), b=int(value[2]), a=int(value[3]) if len(value) > 3 else 255)
+    if isinstance(current, unreal.LinearColor):
+        return unreal.LinearColor(value[0], value[1], value[2], value[3] if len(value) > 3 else 1.0)
+    if isinstance(current, unreal.Vector4):
+        return unreal.Vector4(*value)
+    if isinstance(current, unreal.EnumBase):
+        return getattr(type(current), value)
+    if isinstance(value, str) and not isinstance(current, str):
+        asset = library.load_asset(value) if value.startswith("/") else None
+        if asset is None:
+            raise ValueError(f"asset {value} not found")
+        return asset
+    return value
+
+
+def apply_raw(target, values, override_flags=False):
+    failed = []
+    for name, value in values.items():
+        try:
+            target.set_editor_property(name, convert(target.get_editor_property(name), value))
+            if override_flags:
+                try:
+                    target.set_editor_property(f"override_{name}", True)
+                except Exception:
+                    pass
+            print(f"  {name} = {target.get_editor_property(name)}")
+        except Exception as error:
+            failed.append(name)
+            print(f"  SKIPPED {name}: {error}")
+    return failed
+
+
+def place_raw_sky_light(values):
+    actor = actors_library.spawn_actor_from_class(unreal.SkyLight, unreal.Vector(0, 0, 6000))
+    component = actor.get_component_by_class(unreal.SkyLightComponent)
+    component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    print("sky light")
+    failed = apply_raw(component, values)
+    if "cubemap" in failed:
+        component.set_editor_property("source_type", unreal.SkyLightSourceType.SLS_CAPTURED_SCENE)
+        print("  WARNING cubemap missing: source type set to captured scene")
+    component.recapture_sky()
+    label(actor, "SkyLight")
+
+
+def place_raw_height_fog(values):
+    actor = actors_library.spawn_actor_from_class(unreal.ExponentialHeightFog, unreal.Vector(0, 0, 0))
+    print("height fog")
+    apply_raw(actor.get_component_by_class(unreal.ExponentialHeightFogComponent), values)
+    label(actor, "ExponentialHeightFog")
+
+
+def place_raw_sky_atmosphere(values):
+    actor = actors_library.spawn_actor_from_class(unreal.SkyAtmosphere, unreal.Vector(0, 0, 0))
+    print("sky atmosphere")
+    apply_raw(actor.get_component_by_class(unreal.SkyAtmosphereComponent), values)
+    label(actor, "SkyAtmosphere")
+
+
+def place_raw_post_process(spec):
+    volume = actors_library.spawn_actor_from_class(unreal.PostProcessVolume, unreal.Vector(0, 0, 0))
+    print("post process")
+    for name in ("priority", "unbound", "blend_weight"):
+        if name in spec:
+            volume.set_editor_property(name, spec[name])
+    settings = volume.get_editor_property("settings")
+    apply_raw(settings, spec.get("settings", {}), override_flags=True)
+    volume.set_editor_property("settings", settings)
+    label(volume, "GlobalPostProcessVolume")
+
+
 sky = place_sky() if "sky" in world_spec else None
+if "sky_light" in world_spec:
+    place_raw_sky_light(world_spec["sky_light"])
+if "height_fog" in world_spec:
+    place_raw_height_fog(world_spec["height_fog"])
+if "sky_atmosphere" in world_spec:
+    place_raw_sky_atmosphere(world_spec["sky_atmosphere"])
+if "post_process" in world_spec:
+    place_raw_post_process(world_spec["post_process"])
 if "night" in world_spec:
     place_lighting(sky)
 if "fog" in world_spec:
