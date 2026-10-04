@@ -51,6 +51,8 @@ Some of the scripts:
 | `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
 | `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
 | `export_textures.py` | Export textures to PNG |
+| `auto_uv.py` | Auto-generate UVs on static meshes through Geometry Scripting, xatlas or patch method, then repack. Dry run by default, `dry_run=0` writes. Needs the Geometry Scripting plugin |
+| `import_fonts.py` | Import a folder of `Family-Style.ttf` files as font faces and group each family into a composite font. Needs an editor helper exposed as `unreal.BMFontBuilderLibrary.create_composite_font` from a C++ editor module; without it the script stops before importing |
 | `build_editor.bat` | Command line build of a project's editor target, `build_editor.bat path\to\Project.uproject`, with `UE_ROOT` pointing at the engine |
 | `move_assets.py`, `move_folder.py` | Move assets and folders |
 | `fix_redirectors.py` | Resave whatever still points at a redirector, then delete the redirectors nothing references; preview first |
