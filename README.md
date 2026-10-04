@@ -54,6 +54,7 @@ Some of the scripts:
 | `make_look_materials.py` | Builds two post-process materials: a soft 1-bit dither in the style of Return of the Obra Dinn, and a PS2-era look |
 | `material_stats.py` | Pixel-shader instruction count, a quick check that a material compiled |
 | `screenshot.py`, `console.py` | High-res screenshot, read or run console variables |
+| `set_ini_cvars.py` | Command line tool, not an editor script: writes console variables from a JSON spec into a project's `[SystemSettings]` and refuses while that project's editor is open |
 | `set_camera.py`, `shots.py` | Move the editor camera and save one screenshot per view, from a list or an orbit |
 | `import_manifest.py` | Import the GLB files listed in a JSON manifest as static meshes with LODs, collision and tinted material instances |
 | `make_light_functions.py` | Build light-function materials (drifting noise, flicker) and instances from a JSON spec |
