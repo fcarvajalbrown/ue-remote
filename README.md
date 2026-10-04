@@ -18,6 +18,7 @@ project's content.
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
+| `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, no editor needed |
 | `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
 
 No pip packages for anything except `citygen/`, which needs `shapely` and `numpy`, and `meshkit/`, which needs `numpy`.
@@ -47,6 +48,10 @@ Some of the scripts:
 | `list_assets.py`, `list_actors.py` | Inventory a folder or the open level |
 | `report_unused.py`, `validate_assets.py`, `engine_refs.py` | Find unused assets, broken ones, and anything that pulls engine content into a shipping build |
 | `mesh_budget.py`, `texture_audit.py` | Triangle and texture-size budgets |
+| `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
+| `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
+| `export_textures.py` | Export textures to PNG |
+| `build_editor.bat` | Command line build of a project's editor target, `build_editor.bat path	o\Project.uproject`, with `UE_ROOT` pointing at the engine |
 | `move_assets.py`, `move_folder.py` | Move assets and folders |
 | `fix_redirectors.py` | Resave whatever still points at a redirector, then delete the redirectors nothing references; preview first |
 | `delete_assets.py` | Delete folders or assets after a read-only preview. It resaves anything still pointing at a redirector, removes redirectors that would be left dangling, refuses when a live asset depends on the target, and clears the empty folders. `fix_maps=1` also resaves the maps that reference a redirector |
@@ -145,6 +150,17 @@ python ue_remote/shots.py --project MyProject --out shots --orbit 0,0,300 --radi
 ```
 
 Two things that cost time: remote execution in file mode fails with "Could not load Python file" if the script text contains `.py` followed by a space, and an asset cannot be recreated right after deleting it unless garbage is collected first.
+
+## bpdump
+
+Reads Blueprint `.uasset` files without opening the editor, which makes Blueprints easy to review, search and diff. It drives UAssetGUI (MIT) as a separate process, downloaded once from the pinned release and checked against its SHA-256 before use.
+
+```
+python bpdump/bpdump.py fetch
+python bpdump/bpdump.py run --source MyProject/Content/Blueprints --out dump
+```
+
+`fetch` saves the binary under `bpdump/.cache`, or under the folder in `UASSETGUI_DIR` if you set it. `run` writes `dump/json/` with the full export and `dump/summary/` with one Markdown file per Blueprint listing its parent class and variables. `export` and `summarize` do the two halves separately. `--include` takes a glob on the relative path and can repeat. Tested on one Blueprint here, a sky actor, and the summary listed its variables correctly.
 
 ## The rest
 
