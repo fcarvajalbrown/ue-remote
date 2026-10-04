@@ -18,6 +18,7 @@ project's content.
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
+| `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
 | `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, no editor needed |
 | `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
 
@@ -169,6 +170,7 @@ python bpdump/bpdump.py run --source MyProject/Content/Blueprints --out dump
 ```
 python textures/make_bayer.py --size 8 --out T_Bayer8.png
 python docs_tools/md_to_pdf.py notes.md notes.pdf
+python midi/midi_export.py song.json --out song.mid
 python moodboard/itch_tags.py tag-abstract/tag-horror --out games.json --covers covers/
 python moodboard/itch_album.py album.json out/ --pdf album.pdf
 ```
