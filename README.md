@@ -15,7 +15,7 @@ project's content.
 |---|---|
 | `ue_remote/` | CLI that runs Python in an open Unreal Editor through Epic's Remote Execution, plus a library of editor scripts |
 | `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps, and size statistics of isolated buildings around any point |
-| `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials |
+| `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials; `downsize.py` shrinks exported images to the caps of a `texture_budget` spec with Lanczos filtering, keeps alpha, and renormalizes normal maps |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
 | `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
@@ -53,6 +53,7 @@ Some of the scripts:
 | `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
 | `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
 | `export_textures.py` | Export textures to PNG |
+| `reimport_textures.py` | Reimports a folder of images over the existing textures of the same name, keeping their settings; refuses if any image has no matching asset. Preview by default, `apply=1` imports. With `export_textures.py` and `textures/downsize.py` it shrinks stored 4K sources: export, downsize, reimport |
 | `auto_uv.py` | Auto-generate UVs on static meshes through Geometry Scripting, xatlas or patch method, then repack. Dry run by default, `dry_run=0` writes. Needs the Geometry Scripting plugin |
 | `import_fonts.py` | Import a folder of `Family-Style.ttf` files as font faces and group each family into a composite font. Needs an editor helper exposed as `unreal.BMFontBuilderLibrary.create_composite_font` from a C++ editor module; without it the script stops before importing |
 | `build_editor.bat` | Command line build of a project's editor target, `build_editor.bat path\to\Project.uproject`, with `UE_ROOT` pointing at the engine |
