@@ -1,0 +1,17 @@
+{
+  "path": "/Game/ThirdParty/SomePack/Textures",
+  "default_max_size": 2048,
+  "max_size_rules": [
+    {"contains": "_Detail_", "max_size": 1024},
+    {"contains": "_Decal_", "max_size": 512}
+  ],
+  "suffixes": {
+    "normal": "_Normal",
+    "masks": "_ORM"
+  },
+  "kinds": {
+    "color": {"lod_group": "TEXTUREGROUP_WORLD", "compression": "TC_DEFAULT", "srgb": true},
+    "normal": {"lod_group": "TEXTUREGROUP_WORLD_NORMAL_MAP", "compression": "TC_NORMALMAP", "srgb": false},
+    "masks": {"lod_group": "TEXTUREGROUP_WORLD_SPECULAR", "compression": "TC_MASKS", "srgb": false}
+  }
+}

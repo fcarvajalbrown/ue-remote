@@ -49,6 +49,7 @@ Some of the scripts:
 | `list_assets.py`, `list_actors.py` | Inventory a folder or the open level |
 | `report_unused.py`, `validate_assets.py`, `engine_refs.py` | Find unused assets, broken ones, and anything that pulls engine content into a shipping build |
 | `mesh_budget.py`, `texture_audit.py` | Triangle and texture-size budgets |
+| `texture_budget.py` | Caps texture sizes for downloaded or 4K assets without touching the source: max size per name rule, texture group, compression and sRGB by suffix (colour, normal, packed masks), all from a JSON spec (`texture_budget.example.json`). Preview by default, `apply=1` writes and saves |
 | `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
 | `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
 | `export_textures.py` | Export textures to PNG |
@@ -57,6 +58,8 @@ Some of the scripts:
 | `build_editor.bat` | Command line build of a project's editor target, `build_editor.bat path\to\Project.uproject`, with `UE_ROOT` pointing at the engine |
 | `move_assets.py`, `move_folder.py` | Move assets and folders |
 | `fix_redirectors.py` | Resave whatever still points at a redirector, then delete the redirectors nothing references; preview first |
+| `relink_media.py` | After a folder move, points `FileMediaSource` assets at the new location of their video files (`old` and `new` path prefixes); `move_folder.py` does not carry raw `.mp4` files, move those on disk first. Preview by default, `apply=1` writes |
+| `resave_blueprints.py` | Lists Blueprints, Widget and Anim Blueprints under a path with their parent class from the asset registry, optionally filtered by `match`; `apply=1` resaves them, which bakes class redirects into the files after a C++ class moves or is renamed |
 | `delete_assets.py` | Delete folders or assets after a read-only preview. It resaves anything still pointing at a redirector, removes redirectors that would be left dangling, refuses when a live asset depends on the target, and clears the empty folders. `fix_maps=1` also resaves the maps that reference a redirector |
 | `retarget_batch.py`, `strip_notifies.py`, `migrate.py` | Animation retargeting and clean migration between projects |
 | `make_look_materials.py` | Builds two post-process materials: a soft 1-bit dither in the style of Return of the Obra Dinn, and a PS2-era look |
