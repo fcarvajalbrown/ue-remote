@@ -47,8 +47,9 @@ Some of the scripts:
 | `list_assets.py`, `list_actors.py` | Inventory a folder or the open level |
 | `report_unused.py`, `validate_assets.py`, `engine_refs.py` | Find unused assets, broken ones, and anything that pulls engine content into a shipping build |
 | `mesh_budget.py`, `texture_audit.py` | Triangle and texture-size budgets |
-| `move_assets.py`, `move_folder.py`, `fix_redirectors.py` | Move assets and folders, then fix up the redirectors a move leaves |
-| `delete_assets.py` | Delete with a preview first; refuses when something outside still references the asset |
+| `move_assets.py`, `move_folder.py` | Move assets and folders |
+| `fix_redirectors.py` | Resave whatever still points at a redirector, then delete the redirectors nothing references; preview first |
+| `delete_assets.py` | Delete folders or assets after a read-only preview. It resaves anything still pointing at a redirector, removes redirectors that would be left dangling, refuses when a live asset depends on the target, and clears the empty folders. `fix_maps=1` also resaves the maps that reference a redirector |
 | `retarget_batch.py`, `strip_notifies.py`, `migrate.py` | Animation retargeting and clean migration between projects |
 | `make_look_materials.py` | Builds two post-process materials: a soft 1-bit dither in the style of Return of the Obra Dinn, and a PS2-era look |
 | `material_stats.py` | Pixel-shader instruction count, a quick check that a material compiled |
