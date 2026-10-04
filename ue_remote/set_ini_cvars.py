@@ -62,6 +62,8 @@ def main():
     parser.add_argument("--project", help="project name; refuses to run while its editor is open")
     args = parser.parse_args()
 
+    if len(args.section) > 1 and args.section[1] == ":":
+        raise SystemExit(f"section {args.section} looks like a Windows path; in Git Bash set MSYS_NO_PATHCONV=1 so /Script/... is not rewritten")
     if args.project and editor_open(args.project):
         raise SystemExit(f"the editor for {args.project} is open; close it first, the ini is read at startup")
     values = pick(json.loads(args.spec.read_text(encoding="utf-8")), args.key)
