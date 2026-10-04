@@ -49,7 +49,7 @@ Some of the scripts:
 | `list_assets.py`, `list_actors.py` | Inventory a folder or the open level |
 | `report_unused.py`, `validate_assets.py`, `engine_refs.py` | Find unused assets, broken ones, and anything that pulls engine content into a shipping build |
 | `mesh_budget.py`, `texture_audit.py` | Triangle and texture-size budgets |
-| `texture_budget.py` | Caps texture sizes for downloaded or 4K assets without touching the source: max size per name rule, texture group, compression and sRGB by suffix (colour, normal, packed masks), all from a JSON spec (`texture_budget.example.json`). Preview by default, `apply=1` writes and saves |
+| `texture_budget.py` | Caps texture sizes for downloaded or 4K assets without touching the source: max size per name rule, texture group, compression and sRGB by suffix (colour, normal, packed masks), all from a JSON spec (`texture_budget.example.json`). Preview by default, `apply=1` writes and saves. Switching a texture to `TC_MASKS` breaks every material whose sampler for it is still Color or Linear Color (the material falls back to the default grey); keep `TC_DEFAULT` with sRGB off unless the samplers are set to Masks |
 | `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
 | `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
 | `export_textures.py` | Export textures to PNG |
