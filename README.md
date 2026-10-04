@@ -1,6 +1,6 @@
-<p align="center"><img src="logo.svg" width="96" alt="unreal-engine-python-tools logo"></p>
+<p align="center"><img src="logo.svg" width="96" alt="ue-remote logo"></p>
 
-# unreal-engine-python-tools
+# ue-remote
 
 Python tools for Unreal Engine 5: run scripts inside a running editor from the command line, plus
 the side tools a small game project ends up needing. OpenStreetMap to DXF for city blockouts,
