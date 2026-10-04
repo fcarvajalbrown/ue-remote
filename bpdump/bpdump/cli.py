@@ -1,0 +1,50 @@
+import argparse
+import sys
+from pathlib import Path
+
+from bpdump import exporter
+from bpdump.summary import summarize
+
+DEFAULT_ENGINE = "VER_UE5_5"
+
+
+def summarize_folder(out_root):
+    json_root = Path(out_root) / "json"
+    count = 0
+    for json_path in sorted(json_root.rglob("*.json")):
+        relative = json_path.relative_to(json_root).with_suffix(".md")
+        destination = Path(out_root) / "summary" / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(summarize(json_path), encoding="utf-8")
+        count += 1
+    print(f"summarised {count}")
+
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(prog="bpdump", description="Read Blueprint .uasset files offline into JSON and readable summaries.")
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("fetch", help="download the pinned UAssetGUI release into .cache next to the tool, or into UASSETGUI_DIR when set")
+    for name in ("export", "run"):
+        step = sub.add_parser(name)
+        step.add_argument("--source", required=True, help="Content folder holding .uasset files, read only")
+        step.add_argument("--out", required=True, help="output folder, json/ and summary/ are created inside")
+        step.add_argument("--engine", default=DEFAULT_ENGINE)
+        step.add_argument("--force", action="store_true", help="re-export files that already exist")
+        step.add_argument("--include", action="append", default=[], help="glob on the relative path, repeatable, for example 'SaveGame/**/*.json'")
+    summary = sub.add_parser("summarize")
+    summary.add_argument("--out", required=True)
+    return parser.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args(argv if argv is not None else sys.argv[1:])
+    if args.command == "fetch":
+        exporter.fetch()
+        return 0
+    if args.command in ("export", "run"):
+        ok = exporter.export_folder(args.source, args.out, args.engine, args.force, args.include)
+        if args.command == "run":
+            summarize_folder(args.out)
+        return 0 if ok else 1
+    summarize_folder(args.out)
+    return 0
