@@ -26,11 +26,19 @@ def referencers(package):
     return {str(name) for name in registry.get_referencers(package, options) or [] if not str(name).startswith("/Script")}
 
 
-def targets_from_roots():
+def default_object(package):
+    return f"{package}.{package.rsplit('/', 1)[1]}"
+
+
+def objects_from_roots():
     found = set()
     for root in roots:
-        found |= {path.split(".")[0] for path in library.list_assets(root, recursive=True, include_folder=False)}
-    return found | set(extra)
+        found |= set(library.list_assets(root, recursive=True, include_folder=False))
+    return found | {default_object(package) for package in extra}
+
+
+def packages_of(objects):
+    return {path.split(".")[0] for path in objects}
 
 
 def check_roots():
@@ -122,7 +130,8 @@ def remove_empty_folders(root):
 check_roots()
 registry.scan_paths_synchronous(roots + [path.rsplit("/", 1)[0] for path in extra], True)
 registry.wait_for_completion()
-targets = targets_from_roots()
+objects = objects_from_roots()
+targets = packages_of(objects)
 if not targets:
     if confirm:
         for root in roots:
@@ -131,6 +140,7 @@ if not targets:
     raise SystemExit("no assets under the given paths; rerun with --arg confirm=1 to remove the empty folders")
 
 targets, fixed, maps, blocked, dangling = resolve(targets)
+objects |= {default_object(package) for package in dangling}
 redirectors = sorted(p for p in targets if class_of(p) == "ObjectRedirector")
 
 for package in sorted(targets):
@@ -150,12 +160,12 @@ if not confirm:
     print("preview only; nothing deleted. Rerun with --arg confirm=1 to delete")
 else:
     failed = []
-    for package in sorted(targets, key=lambda p: class_of(p) != "ObjectRedirector"):
-        if not library.delete_asset(package):
-            failed.append(package)
+    for path in sorted(objects, key=lambda p: class_of(p.split(".")[0]) != "ObjectRedirector"):
+        if library.does_asset_exist(path) and not library.delete_asset(path):
+            failed.append(path)
     for root in roots:
         remove_empty_folders(root)
-    print(f"deleted {len(targets) - len(failed)} of {len(targets)}")
+    print(f"deleted {len(objects) - len(failed)} of {len(objects)} objects in {len(targets)} packages")
     for package in failed:
         print(f"FAILED {package}")
     print(f"folders left: {[root for root in roots if library.does_directory_exist(root)]}")
