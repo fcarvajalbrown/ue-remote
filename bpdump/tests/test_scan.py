@@ -56,6 +56,15 @@ class ScanTest(unittest.TestCase):
         self.assertIn("/Game/Audio/SC_Click", record["refs"])
         self.assertEqual(record["names"], ["Click Sound"])
 
+    def test_mixamo_bones_without_prefix(self):
+        with tempfile.TemporaryDirectory() as folder:
+            content = Path(folder) / "Content"
+            asset = content / "SK_Hero.uasset"
+            content.mkdir()
+            asset.write_bytes(b"".join(fstring(bone) for bone in ["Hips", "Spine1", "Spine2", "HeadTop_End", "LeftUpLeg", "LeftHandIndex1"]))
+            record = scan.describe(asset, content, False, False)
+        self.assertTrue(record["mixamo_bones"])
+
     def test_scan_resumes_and_tags_project(self):
         with tempfile.TemporaryDirectory() as folder:
             project = Path(folder) / "Demo"

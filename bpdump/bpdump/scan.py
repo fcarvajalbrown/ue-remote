@@ -17,6 +17,7 @@ SOURCE_FILE = re.compile(
 )
 MEMBER_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_ ]{3,80}$")
 GUID = re.compile(r"[0-9A-F]{32}")
+MIXAMO_BONES = {"Hips", "Spine1", "Spine2", "HeadTop_End", "LeftUpLeg", "LeftHandIndex1"}
 REGISTRY_NOISE = {"GeneratedClass", "ModuleRelativePath", "BlueprintType", "IsDataOnly"}
 GRAPH_NOISE = {
     "Construction Script", "Event Graph", "Is Valid", "Is Not Valid", "Return Value", "Array Element",
@@ -143,10 +144,21 @@ def fname(names, data, offset):
     return text if number == 0 else f"{text}_{number - 1}"
 
 
-def table_class(data, stem):
+def import_package(imports, index):
+    seen = 0
+    while index < 0 and seen < 64:
+        class_name, outer, name = imports[-index - 1]
+        if class_name == "Package":
+            return name
+        index = outer
+        seen += 1
+    return ""
+
+
+def read_tables(data, stem):
     summary = read_summary(data)
     if not summary:
-        return ""
+        return "", ""
     names = read_names(data, *summary["names"], summary["ue4"])
     import_count, import_offset = summary["imports"]
     import_size = 28
@@ -154,13 +166,17 @@ def table_class(data, stem):
         import_size += 8
     if summary["ue5"] >= UE5_OPTIONAL_RESOURCES:
         import_size += 4
-    imports = [fname(names, data, import_offset + i * import_size + 20) for i in range(import_count)]
+    imports = []
+    for i in range(import_count):
+        base = import_offset + i * import_size
+        imports.append((fname(names, data, base + 8), struct.unpack_from("<i", data, base + 16)[0], fname(names, data, base + 20)))
+    skeleton = next((import_package(imports, -i - 1) for i, entry in enumerate(imports) if entry[0] == "Skeleton"), "")
     export_count, export_offset = summary["exports"]
     if export_count <= 0 or not summary["after_exports"]:
-        return ""
+        return "", skeleton
     span = min(summary["after_exports"]) - export_offset
     if span % export_count:
-        return ""
+        return "", skeleton
     stride = span // export_count
     outer_at = 12 if summary["ue4"] >= UE4_TEMPLATE_INDEX_IN_COOKED_EXPORTS else 8
     candidates = []
@@ -169,26 +185,25 @@ def table_class(data, stem):
         class_index, outer = struct.unpack_from("<i", data, base)[0], struct.unpack_from("<i", data, base + outer_at)[0]
         name = fname(names, data, base + outer_at + 4)
         if class_index < 0 and -class_index - 1 < len(imports):
-            class_name = imports[-class_index - 1]
+            class_name = imports[-class_index - 1][2]
         elif 0 < class_index <= export_count:
             class_name = fname(names, data, export_offset + (class_index - 1) * stride + outer_at + 4)
         else:
             class_name = ""
         if outer <= 0 and class_name and class_name not in HIDDEN_EXPORT_CLASSES:
             candidates.append((outer != 0, name != stem, i, class_name))
-    return min(candidates)[3] if candidates else ""
+    return (min(candidates)[3] if candidates else ""), skeleton
 
 
 def asset_class(data, stem):
     try:
-        found = table_class(data, stem)
+        found, skeleton = read_tables(data, stem)
     except (struct.error, ValueError, IndexError):
-        found = ""
+        found, skeleton = "", ""
     if found:
-        return found, "export_table"
+        return found, "export_table", skeleton
     fallback = registry_class(data, stem)
-    return fallback, "string_search" if fallback else ""
-
+    return fallback, "string_search" if fallback else "", skeleton
 
 
 def registry_class(data, stem):
@@ -224,7 +239,7 @@ def describe(path, content_root, with_refs, with_names):
     with open(path, "rb") as handle:
         data = handle.read(HEADER_LIMIT)
     strings = printable_strings(data)
-    found_class, class_source = asset_class(data, path.stem)
+    found_class, class_source, table_skeleton = asset_class(data, path.stem)
     relative = path.relative_to(content_root).with_suffix("").as_posix()
     own = "/Game/" + relative
     saved_with = next((text for text in strings if text.startswith("++UE")), "")
@@ -235,8 +250,8 @@ def describe(path, content_root, with_refs, with_names):
         "class_from": class_source,
         "parent": tag_class(strings, "ParentClass"),
         "native_parent": tag_class(strings, "NativeParentClass"),
-        "skeleton": next((game_path(text) for text in strings if text.startswith("/Game/") and "keleton" in text.rsplit("/", 1)[-1] and game_path(text) != own), ""),
-        "mixamo_bones": any(text.lower().startswith("mixamorig") for text in strings),
+        "skeleton": table_skeleton or next((game_path(text) for text in strings if text.startswith("/Game/") and "keleton" in text.rsplit("/", 1)[-1] and game_path(text) != own), ""),
+        "mixamo_bones": any(text.lower().startswith("mixamorig") for text in strings) or MIXAMO_BONES <= set(strings),
         "saved_with": saved_with.replace("++UE", "UE").replace("+Release-", " "),
         "source_file": source.replace("\\", "/"),
         "bytes": path.stat().st_size,
