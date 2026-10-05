@@ -68,6 +68,7 @@ Some of the scripts:
 | `delete_assets.py` | Delete folders or assets after a read-only preview. It resaves anything still pointing at a redirector, removes redirectors that would be left dangling, refuses when a live asset depends on the target, and clears the empty folders. `fix_maps=1` also resaves the maps that reference a redirector |
 | `retarget_batch.py`, `strip_notifies.py`, `migrate.py` | Animation retargeting and clean migration between projects |
 | `make_look_materials.py` | Builds two post-process materials: a soft 1-bit dither in the style of Return of the Obra Dinn, and a PS2-era look |
+| `set_sound_waves.py` | Sets compression type (`bink_audio`, `adpcm`, `pcm`, `opus`, `rad_audio`), compression quality, loading behaviour (`load_on_demand` streams) and looping on every SoundWave under a path, printing each wave's current values, duration, rate and channels. Preview by default, `apply=1` writes and saves |
 | `material_stats.py` | Pixel-shader instruction count, a quick check that a material compiled |
 | `screenshot.py`, `console.py` | High-res screenshot, read or run console variables |
 | `set_ini_cvars.py` | Command line tool, not an editor script: writes console variables from a JSON spec into a project's `[SystemSettings]` and refuses while that project's editor is open. In Git Bash set `MSYS_NO_PATHCONV=1` when the section starts with `/Script/` |
