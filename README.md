@@ -18,7 +18,7 @@ project's content.
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials; `hdri_match.py` ranks Poly Haven HDRIs (CC0) by how close their sky is to the sky in a reference image (brightness, cloud contrast, saturation, cool tint); `downsize.py` shrinks exported images to the caps of a `texture_budget` spec with Lanczos filtering, keeps alpha, and renormalizes normal maps |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
 | `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF; `commons_fetch.py` searches Wikimedia Commons and downloads images with a `sources.json` record of author, licence, source page, date and SHA-256 |
-| `audio/` | `listen.py` describes how an audio file sounds in text, for checking sounds without hearing them: BS.1770 loudness and true peak, a timeline of loudness, steadiness, brightness and band shares in words, transients with the band they hit, hums and whistles, a voice-rhythm heuristic, stereo correlation and mono fold-down loss, clipping, and loop seams with a search for the best loop points; `--png` adds a spectrogram sheet. Needs numpy, scipy, soundfile, and matplotlib for the sheet |
+| `audio/` | `listen.py` describes how an audio file sounds in text, for checking sounds without hearing them: BS.1770 loudness and true peak, a timeline of loudness, steadiness, brightness and band shares in words, transients with the band they hit, hums and whistles, a voice-rhythm heuristic, stereo correlation and mono fold-down loss, clipping, and loop seams with a search for the best loop points; `--png` adds a spectrogram sheet. Needs numpy, scipy, soundfile, and matplotlib for the sheet. `slice_bursts.py` cuts continuous takes (cloth, breathing) into one-shot bursts from a JSON spec, rejects bursts with a pitched voice (autocorrelation voicing), and levels each to a momentary LUFS target under a true-peak ceiling with Keel's BS.1770-4 meters (`--keel`, run with Keel's venv). `archive_catalog.py` lists the files of archive.org items whose names match a pattern, with licence and length; `fetch_archive_org.py` downloads an item's files, optionally filtered by name, keeps each only when its SHA-1 matches archive.org's, and writes a manifest with SHA-256 for the licence record |
 | `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
 | `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, and scans whole folders of projects to identify every asset by class, parent, skeleton and source file, no editor needed |
 | `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
@@ -198,6 +198,9 @@ python moodboard/itch_tags.py tag-abstract/tag-horror --out games.json --covers 
 python moodboard/itch_album.py album.json out/ --pdf album.pdf
 python moodboard/commons_fetch.py search "Faro Punta Delgada"
 python moodboard/commons_fetch.py fetch photos.json out/ --width 1600
+python audio/archive_catalog.py Red_Library_Foley_Props_2 --match "cloth|fabric"
+python audio/fetch_archive_org.py Red_Library_Foley_Props_2 --dest out/ --match "Clothing"
+.venv/Scripts/python audio/slice_bursts.py --spec layers.json --out cuts/ --keel C:/Projects/Keel
 ```
 
 `md_to_pdf.py` and the album PDFs need Microsoft Edge on Windows. itch.io starts refusing requests
