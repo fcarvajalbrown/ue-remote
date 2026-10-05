@@ -168,6 +168,36 @@ def face_bsdf(spec, albedo, roughness, normal):
     }
 
 
+def light_at(light, t):
+    entry = dict(light)
+    if "look_at_to" in light:
+        eased = t if light.get("easing", "linear") == "linear" else t * t * (3 - 2 * t)
+        entry["look_at"] = [a + (b - a) * eased for a, b in zip(light["look_at"], light["look_at_to"])]
+    return entry
+
+
+def light_dict(light, t):
+    entry = light_at(light, t)
+    if light.get("type", "rect") == "spot":
+        return {
+            "type": "spot",
+            "to_world": look_at(entry),
+            "intensity": {"type": "rgb", "value": light["intensity"]},
+            "cutoff_angle": float(light["cutoff_angle"]),
+            "beam_width": float(light["beam_width"]),
+        }
+    half = [light["size"][0] / 2, light["size"][1] / 2, 1]
+    return {
+        "type": "rectangle",
+        "to_world": look_at(entry) @ mi.ScalarTransform4f().scale(half),
+        "emitter": {"type": "area", "radiance": {"type": "rgb", "value": light["radiance"]}},
+    }
+
+
+def tonemap(image, exposure):
+    return (linear_to_srgb(filmic(image * exposure)) * 255.0 + 0.5).astype(np.uint8)
+
+
 def build_scene(spec, face_path, face_material, width, height, spp):
     board, cam = spec["board"], spec["camera"]
     depth = float(spec["carve"]["depth_m"])
@@ -197,12 +227,7 @@ def build_scene(spec, face_path, face_material, width, height, spp):
         "ambient": {"type": "constant", "radiance": {"type": "rgb", "value": spec["ambient"]}},
     }
     for i, light in enumerate(spec["lights"]):
-        half = [light["size"][0] / 2, light["size"][1] / 2, 1]
-        scene[f"light_{i}"] = {
-            "type": "rectangle",
-            "to_world": look_at(light) @ mi.ScalarTransform4f().scale(half),
-            "emitter": {"type": "area", "radiance": {"type": "rgb", "value": light["radiance"]}},
-        }
+        scene[f"light_{i}"] = light_dict(light, 0.0)
     return scene
 
 
@@ -215,6 +240,8 @@ def main():
     parser.add_argument("--scale", type=float, default=1.0, help="multiply the output size, e.g. 0.25 for a preview")
     parser.add_argument("--spp", type=int, default=0)
     parser.add_argument("--variant", default="")
+    parser.add_argument("--frames", type=int, default=0, help="override the spec's frame count; above 1, --out is a folder of frame_NNNN.png")
+    parser.add_argument("--frame-range", default="", help="python slice of frames to render, e.g. 0:72:12 for a preview")
     args = parser.parse_args()
     spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
     render = spec["render"]
@@ -234,13 +261,26 @@ def main():
     built = time.time()
     scene = mi.load_dict(scene_dict)
     face_path.unlink()
-    image = np.array(mi.render(scene), dtype=np.float32)[..., :3]
-    rendered = time.time()
-    exposed = image * float(render.get("exposure", 1.0))
-    out = (linear_to_srgb(filmic(exposed)) * 255.0 + 0.5).astype(np.uint8)
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    mi.Bitmap(out, pixel_format=mi.Bitmap.PixelFormat.RGB).write(args.out)
-    print(f"{args.out} {width}x{height} build {built - started:.1f}s render {rendered - built:.1f}s")
+    exposure = float(render.get("exposure", 1.0))
+    frames = int(args.frames or render.get("frames", 1))
+    if frames == 1:
+        image = np.array(mi.render(scene), dtype=np.float32)[..., :3]
+        mi.Bitmap(tonemap(image, exposure), pixel_format=mi.Bitmap.PixelFormat.RGB).write(args.out)
+        print(f"{args.out} {width}x{height} build {built - started:.1f}s render {time.time() - built:.1f}s")
+        return
+    folder = Path(args.out)
+    folder.mkdir(parents=True, exist_ok=True)
+    params = mi.traverse(scene)
+    moving = [i for i, light in enumerate(spec["lights"]) if light.get("type") == "spot" and "look_at_to" in light]
+    chosen = range(frames)[slice(*[int(x) if x else None for x in args.frame_range.split(":")])] if args.frame_range else range(frames)
+    for frame in chosen:
+        t = frame / (frames - 1)
+        for i in moving:
+            params[f"light_{i}.to_world"] = look_at(light_at(spec["lights"][i], t))
+        params.update()
+        image = np.array(mi.render(scene, params, seed=0), dtype=np.float32)[..., :3]
+        mi.Bitmap(tonemap(image, exposure), pixel_format=mi.Bitmap.PixelFormat.RGB).write(str(folder / f"frame_{frame:04d}.png"))
+    print(f"{folder} {len(chosen)} frames {width}x{height} build {built - started:.1f}s render {time.time() - built:.1f}s")
 
 
 if __name__ == "__main__":
