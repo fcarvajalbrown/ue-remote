@@ -198,7 +198,7 @@ def tonemap(image, exposure):
     return (linear_to_srgb(filmic(image * exposure)) * 255.0 + 0.5).astype(np.uint8)
 
 
-def build_scene(spec, face_path, face_material, width, height, spp):
+def build_scene(spec, face_path, face_material, width, height, spp, at=0.0):
     board, cam = spec["board"], spec["camera"]
     depth = float(spec["carve"]["depth_m"])
     thickness = float(board["thickness_m"])
@@ -227,7 +227,7 @@ def build_scene(spec, face_path, face_material, width, height, spp):
         "ambient": {"type": "constant", "radiance": {"type": "rgb", "value": spec["ambient"]}},
     }
     for i, light in enumerate(spec["lights"]):
-        scene[f"light_{i}"] = light_dict(light, 0.0)
+        scene[f"light_{i}"] = light_dict(light, at)
     return scene
 
 
@@ -241,6 +241,7 @@ def main():
     parser.add_argument("--spp", type=int, default=0)
     parser.add_argument("--variant", default="")
     parser.add_argument("--frames", type=int, default=0, help="override the spec's frame count; above 1, --out is a folder of frame_NNNN.png")
+    parser.add_argument("--at", type=float, default=0.0, help="for a single frame, how far along its sweep each moving light is, 0 to 1")
     parser.add_argument("--frame-range", default="", help="python slice of frames to render, e.g. 0:72:12 for a preview")
     args = parser.parse_args()
     spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
@@ -257,7 +258,7 @@ def main():
     face.write_ply(str(face_path))
     width = int(round(int(render["width"]) * args.scale))
     height = int(round(int(render["height"]) * args.scale))
-    scene_dict = build_scene(spec, face_path, face_bsdf(spec, albedo, roughness, normal), width, height, args.spp or int(render["spp"]))
+    scene_dict = build_scene(spec, face_path, face_bsdf(spec, albedo, roughness, normal), width, height, args.spp or int(render["spp"]), args.at)
     built = time.time()
     scene = mi.load_dict(scene_dict)
     face_path.unlink()
