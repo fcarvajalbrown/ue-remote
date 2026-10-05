@@ -22,8 +22,9 @@ project's content.
 | `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
 | `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, and scans whole folders of projects to identify every asset by class, parent, skeleton and source file, no editor needed |
 | `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
+| `render/` | `relief_board.py` renders a carved, painted wooden board (a title card, a name board, a sign) headless with Mitsuba 3: a greyscale mask becomes a real carved mesh, PBR wood textures plus groove darkening and worn paint are baked into maps, area lights and a thin-lens camera come from a JSON spec, and the result is tonemapped to a PNG. Runs in its own hash-pinned venv |
 
-No pip packages for anything except `citygen/`, which needs `shapely` and `numpy`, and `meshkit/`, which needs `numpy`.
+No pip packages for anything except `citygen/`, which needs `shapely` and `numpy`, and `meshkit/`, which needs `numpy`, and `render/`, which needs `mitsuba` and `numpy` from its own `requirements.txt`.
 
 ## ue_remote
 
@@ -209,3 +210,13 @@ after a dozen or so in a row; wait and run again.
 ## License
 
 MIT
+
+## render
+
+```
+uv venv render/.venv --python 3.14
+uv pip install --python render/.venv/Scripts/python.exe --require-hashes -r render/requirements.txt
+render/.venv/Scripts/python render/relief_board.py --spec board.json --mask mask.png --out card.png --root <project> --scale 0.3 --spp 16
+```
+
+The mask is white where the board is cut; the spec sets the board size, mesh and bake resolution, carve depth and blur, wood textures and tint, groove darkening, paint colour and wear, camera, area lights and render settings. `--scale` and `--spp` make quick previews. Use the CPU variant `llvm_ad_rgb` when the GPU is small or busy: on a 4 GB RTX 2050 shared with an open Unreal Editor the CUDA variant ran out of memory and crawled (about 5 minutes for a 1152x648 preview), while the CPU rendered the same preview in 2.5 s.
