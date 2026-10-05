@@ -17,7 +17,7 @@ project's content.
 | `citygen/` | OpenStreetMap streets and building footprints to a layered R12 DXF for SketchUp, with Microsoft building footprints to fill the gaps, and size statistics of isolated buildings around any point |
 | `textures/` | Ordered-dither (Bayer) threshold texture as a PNG, for 1-bit and retro post-process materials; `hdri_match.py` ranks Poly Haven HDRIs (CC0) by how close their sky is to the sky in a reference image (brightness, cloud contrast, saturation, cool tint); `downsize.py` shrinks exported images to the caps of a `texture_budget` spec with Lanczos filtering, keeps alpha, and renormalizes normal maps |
 | `docs_tools/` | Markdown to PDF through headless Edge, tables kept whole across pages |
-| `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF |
+| `moodboard/` | Art-reference albums from itch.io or Steam screenshots, as HTML and PDF; `commons_fetch.py` searches Wikimedia Commons and downloads images with a `sources.json` record of author, licence, source page, date and SHA-256 |
 | `midi/` | Writes a Type 1 MIDI file from a JSON spec: notes by name, tempo changes, markers, controller and pitch-bend moves, and controller curves from a sine, triangle, square or random LFO. Standard library only, with tests |
 | `bpdump/` | Reads Blueprint `.uasset` files offline into JSON and readable summaries, and scans whole folders of projects to identify every asset by class, parent, skeleton and source file, no editor needed |
 | `meshkit/` | Spec-driven blockout kit: primitives, walls with openings, roofs, parametric whorled-branch trees, terrain, scatter, layout tables, GLB and manifest output |
@@ -194,6 +194,8 @@ python docs_tools/md_to_pdf.py notes.md notes.pdf
 python midi/midi_export.py song.json --out song.mid
 python moodboard/itch_tags.py tag-abstract/tag-horror --out games.json --covers covers/
 python moodboard/itch_album.py album.json out/ --pdf album.pdf
+python moodboard/commons_fetch.py search "Faro Punta Delgada"
+python moodboard/commons_fetch.py fetch photos.json out/ --width 1600
 ```
 
 `md_to_pdf.py` and the album PDFs need Microsoft Edge on Windows. itch.io starts refusing requests
