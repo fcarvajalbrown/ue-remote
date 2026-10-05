@@ -53,6 +53,7 @@ Some of the scripts:
 | `nanite_audit.py` | Lists static meshes with Nanite enabled; `apply=1` switches it off and saves |
 | `list_mesh_materials.py`, `list_material_parameters.py` | Which material sits in each mesh slot, and every scalar, vector and texture parameter of a material instance with its parent |
 | `export_textures.py` | Export textures to PNG |
+| `import_texture.py` | Import one image file as a texture (`file`, `folder`, `name`), replacing an asset of the same name, saving it, and printing the imported path and size; stops with an error if nothing was imported |
 | `reimport_textures.py` | Reimports a folder of images over the existing textures of the same name, keeping their settings; refuses if any image has no matching asset. Preview by default, `apply=1` imports. With `export_textures.py` and `textures/downsize.py` it shrinks stored 4K sources: export, downsize, reimport |
 | `auto_uv.py` | Auto-generate UVs on static meshes through Geometry Scripting, xatlas or patch method, then repack. Dry run by default, `dry_run=0` writes. Needs the Geometry Scripting plugin |
 | `import_fonts.py` | Import a folder of `Family-Style.ttf` files as font faces and group each family into a composite font. Needs an editor helper exposed as `unreal.BMFontBuilderLibrary.create_composite_font` from a C++ editor module; without it the script stops before importing |
