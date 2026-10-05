@@ -167,7 +167,7 @@ python bpdump/bpdump.py fetch
 python bpdump/bpdump.py run --source MyProject/Content/Blueprints --out dump
 ```
 
-`fetch` saves the binary under `bpdump/.cache`, or under the folder in `UASSETGUI_DIR` if you set it. `run` writes `dump/json/` with the full export and `dump/summary/` with one Markdown file per Blueprint listing its parent class and variables. `export` and `summarize` do the two halves separately. `--include` takes a glob on the relative path and can repeat. Tested on one Blueprint here, a sky actor, and the summary listed its variables correctly.
+`fetch` saves the binary under `bpdump/.cache`, or under the folder in `UASSETGUI_DIR` if you set it. `run` writes `dump/json/` with the full export and `dump/summary/` with one Markdown file per Blueprint listing its parent class and variables. `export` and `summarize` do the two halves separately. `--engine` defaults to `VER_UE5_5`; Blueprints last saved in an older engine need its version, for example `--engine VER_UE4_24`, or UAssetGUI fails on them (72 of 74 failed on a 4.24 project without it). In 4.x output, local variable names show as `?` while calls and flow stay readable. `--include` takes a glob on the relative path and can repeat. Tested on one Blueprint here, a sky actor, and the summary listed its variables correctly.
 
 `scan` is the fast pass for whole drives of old projects. Standard library only, no UAssetGUI, no editor, every asset type. It walks a Content folder, a project or a folder of many projects, skips `DerivedDataCache`, `Intermediate`, `Saved` and `Binaries`, and writes one JSON line per `.uasset` or `.umap`:
 
