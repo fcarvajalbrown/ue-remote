@@ -22,9 +22,14 @@ def explode(geometry):
     return [part for part in getattr(geometry, "geoms", [geometry]) if isinstance(part, Polygon) and not part.is_empty]
 
 
-def load_walls(path, name):
+GLTF_TO_PLAN = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
+
+
+def load_walls(path, name, y_up=False):
     scene = trimesh.load(path, force="scene")
-    mesh = scene.geometry[name]
+    mesh = scene.geometry[name] if name in scene.geometry or len(scene.geometry) != 1 else next(iter(scene.geometry.values()))
+    if y_up:
+        mesh = trimesh.Trimesh(vertices=np.asarray(mesh.vertices) @ GLTF_TO_PLAN.T, faces=mesh.faces, process=False)
     mesh.merge_vertices()
     solid = manifold3d.Manifold(manifold3d.Mesh(vert_properties=np.asarray(mesh.vertices, dtype=np.float32), tri_verts=np.asarray(mesh.faces, dtype=np.uint32)))
     return mesh, solid
@@ -44,15 +49,16 @@ def probe(solid, xy, heights):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Check a blockout wall mesh against its door list: no wall thinner than 8 cm, watertight, every door open from the floor to its head and walled above, every window walled below the sill, open to the head and walled above, and no full-height gap anywhere above the highest head.")
+    parser = argparse.ArgumentParser(description="Check a blockout wall mesh against its door list: no wall thinner than 8 cm, watertight, every door open from the floor to its head and walled above, every window walled below the sill, open to the head and walled above, and no full-height gap anywhere above the highest head. An opening may carry its own sill_m and wall_top_m, which override --sill and --wall-height.")
     parser.add_argument("obj", type=Path)
     parser.add_argument("doors", type=Path)
     parser.add_argument("--object", default="walls")
-    parser.add_argument("--wall-height", type=float, required=True)
-    parser.add_argument("--sill", type=float, required=True)
+    parser.add_argument("--y-up", action="store_true", help="the file is glTF Y-up (x, up, -north); turn it to plan x, north, up")
+    parser.add_argument("--wall-height", type=float)
+    parser.add_argument("--sill", type=float)
     args = parser.parse_args()
 
-    mesh, solid = load_walls(args.obj, args.object)
+    mesh, solid = load_walls(args.obj, args.object, args.y_up)
     placements = json.loads(args.doors.read_text(encoding="utf-8"))
     failures = []
     edge_use = Counter(map(tuple, mesh.edges_sorted))
@@ -63,12 +69,12 @@ def main():
     if solid.status() != manifold3d.Error.NoError:
         failures.append(f"manifold status {solid.status()}")
 
-    top = args.wall_height - PROBE_MARGIN_METRES
     heads = []
     for kind in ("doors", "windows"):
         for opening in placements[kind]:
             xy = opening["plan_xy"]
-            bottom = 0.0 if kind == "doors" else args.sill
+            top = opening.get("wall_top_m", args.wall_height) - PROBE_MARGIN_METRES
+            bottom = 0.0 if kind == "doors" else opening.get("sill_m", args.sill)
             head = bottom + opening["height_m"]
             heads.append(head)
             expected = {PROBE_MARGIN_METRES: kind == "windows", bottom + PROBE_MARGIN_METRES: False, head - PROBE_MARGIN_METRES: False, head + PROBE_MARGIN_METRES: True, top: True}

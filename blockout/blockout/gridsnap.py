@@ -125,10 +125,66 @@ def flip_to_fatter(vertices, faces, labels, max_passes=50, gain=1e-6, coplanar=1
     return np.array(faces, dtype=np.int64)
 
 
-def finished_parts(solid, labels=None):
+def feature_edges(vertices, faces, labels, coplanar=1e-9):
+    owners = {}
+    for index, (a, b, c) in enumerate(faces):
+        for u, v in ((a, b), (b, c), (c, a)):
+            owners.setdefault((min(u, v), max(u, v)), []).append(index)
+    found = []
+    for edge, pair in owners.items():
+        if len(pair) != 2:
+            continue
+        first, second = (unit_normal(vertices[faces[index]]) for index in pair)
+        if labels[pair[0]] != labels[pair[1]] or first is None or second is None or np.dot(first, second) < 1.0 - coplanar:
+            found.append(edge)
+    return found
+
+
+def subdivision_points(a, b, step):
+    varying = np.flatnonzero(np.abs(b - a) > 1e-9)
+    if len(varying) != 1:
+        return []
+    axis = varying[0]
+    low, high = sorted((a[axis], b[axis]))
+    first = int(np.floor(low / step)) + 1
+    values = [index * step for index in range(first, int(np.ceil(high / step)))]
+    values = [value for value in values if value - low >= step / 2.0 - 1e-9 and high - value >= step / 2.0 - 1e-9]
+    if b[axis] < a[axis]:
+        values.reverse()
+    points = []
+    for value in values:
+        point = a.copy()
+        point[axis] = float(np.floor(value / GRID_METRES + 0.5) * GRID_METRES)
+        points.append(point)
+    return points
+
+
+def densify_feature_edges(vertices, faces, labels, step, coplanar):
+    vertices = [np.asarray(point, dtype=np.float64) for point in vertices]
+    faces = [list(face) for face in faces]
+    labels = list(labels)
+    for u, v in feature_edges(np.array(vertices), np.array(faces), labels, coplanar):
+        start = u
+        for point in subdivision_points(vertices[u], vertices[v], step):
+            new = len(vertices)
+            vertices.append(point)
+            for index in [i for i, face in enumerate(faces) if start in face and v in face]:
+                face = faces[index]
+                i = next(k for k in range(3) if {face[k], face[(k + 1) % 3]} == {start, v})
+                first, second, third = face[i], face[(i + 1) % 3], face[(i + 2) % 3]
+                faces[index] = [first, new, third]
+                faces.append([new, second, third])
+                labels.append(labels[index])
+            start = new
+    return np.array(vertices), np.array(faces, dtype=np.int64), labels
+
+
+def finished_parts(solid, labels=None, feature_step=None, feature_coplanar=1e-5):
     snapped = on_grid(solid)
     mesh = snapped.to_mesh()
     vertices = np.asarray(mesh.vert_properties)[:, :3].astype(np.float64)
+    if feature_step is not None:
+        vertices = np.floor(vertices / GRID_METRES + 0.5) * GRID_METRES
     faces = np.asarray(mesh.tri_verts, dtype=np.int64)
     owner = np.empty(len(faces), dtype=object)
     starts = np.asarray(mesh.run_index) // 3
@@ -137,6 +193,11 @@ def finished_parts(solid, labels=None):
     if labels and any(value is None for value in owner):
         raise ValueError("triangles from an unlabelled source")
     faces = flip_to_fatter(vertices, faces, list(owner))
+    if feature_step is not None:
+        faces = flip_to_fatter(vertices, faces, list(owner), coplanar=feature_coplanar)
+        vertices, faces, owner = densify_feature_edges(vertices, faces, list(owner), feature_step, feature_coplanar)
+        faces = flip_to_fatter(vertices, faces, owner, max_passes=2000, gain=1e-12, coplanar=feature_coplanar)
+        owner = np.array(owner, dtype=object)
     parts = {}
     for material in dict.fromkeys(owner):
         parts[material] = vertices[faces[owner == material]]
