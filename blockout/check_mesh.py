@@ -9,6 +9,7 @@ import trimesh
 
 GRID_METRES = 0.01
 GRID_TOLERANCE = 1e-4
+FLOAT32_ULPS = 4
 SLIVER_DEGREES = 1.0
 SHORT_EDGE_METRES = 0.01
 
@@ -49,7 +50,8 @@ def check(path):
     areas = np.linalg.norm(np.cross(corners[:, 1] - corners[:, 0], corners[:, 2] - corners[:, 0]), axis=1) / 2.0
     edge_use = Counter(map(tuple, merged.edges_sorted))
     lengths = np.linalg.norm(merged.vertices[merged.edges_unique[:, 0]] - merged.vertices[merged.edges_unique[:, 1]], axis=1)
-    off_grid = np.abs(merged.vertices / GRID_METRES - np.round(merged.vertices / GRID_METRES)) > GRID_TOLERANCE
+    storage = np.abs(merged.vertices) * np.finfo(np.float32).eps * FLOAT32_ULPS / GRID_METRES
+    off_grid = np.abs(merged.vertices / GRID_METRES - np.round(merged.vertices / GRID_METRES)) > np.maximum(GRID_TOLERANCE, storage)
     report = {
         "triangles": int(len(merged.faces)),
         "materials": len(meshes),
@@ -69,7 +71,7 @@ def check(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Check the topology of blockout GLBs: watertight, consistent winding, no open or non-manifold edges, no degenerate or sliver triangles, every vertex on the 1 cm grid, positive volume.")
+    parser = argparse.ArgumentParser(description="Check the topology of blockout GLBs: watertight, consistent winding, no open or non-manifold edges, no degenerate or sliver triangles, every vertex on the 1 cm grid within float32 storage precision, positive volume.")
     parser.add_argument("paths", nargs="+", type=Path)
     args = parser.parse_args()
     failed = 0

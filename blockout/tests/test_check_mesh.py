@@ -31,6 +31,11 @@ class CheckMeshTest(unittest.TestCase):
         shifted.apply_translation([0.003, 0.0, 0.0])
         self.assertFalse(self.report(shifted)["clean"])
 
+    def test_far_from_the_origin_float32_storage_is_on_the_grid(self):
+        box = trimesh.creation.box([1.0, 2.0, 0.5])
+        box.apply_translation([1234.57, -987.65, 12.34])
+        self.assertTrue(self.report(box)["clean"])
+
 
 if __name__ == "__main__":
     unittest.main()
