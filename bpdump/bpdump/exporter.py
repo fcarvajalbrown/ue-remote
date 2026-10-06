@@ -42,12 +42,16 @@ def fetch(tag=PINNED_TAG):
 
 def export_one(source, destination, engine):
     destination.parent.mkdir(parents=True, exist_ok=True)
-    result = subprocess.run(
-        [str(executable_path()), "tojson", str(source), str(destination), engine],
-        capture_output=True,
-        text=True,
-        timeout=EXPORT_TIMEOUT_SECONDS,
-    )
+    try:
+        result = subprocess.run(
+            [str(executable_path()), "tojson", str(source), str(destination), engine],
+            capture_output=True,
+            text=True,
+            timeout=EXPORT_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"timed out after {EXPORT_TIMEOUT_SECONDS} s: {source}")
+        return False
     return result.returncode == 0 and destination.is_file()
 
 
