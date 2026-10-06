@@ -1,4 +1,9 @@
+import json
+import os
+
 import unreal
+
+ARGS = globals().get("ARGS") or json.loads(os.environ.get("UE_SCRIPT_ARGS", "{}"))
 
 root = ARGS.get("path", ["/Game"])[0]
 match = ARGS.get("match", [""])[0]
@@ -6,6 +11,7 @@ apply = ARGS.get("apply", ["0"])[0] == "1"
 
 library = unreal.EditorAssetLibrary
 registry = unreal.AssetRegistryHelpers.get_asset_registry()
+registry.scan_paths_synchronous([root], True)
 blueprint_classes = {"Blueprint", "WidgetBlueprint", "AnimBlueprint"}
 
 found = 0
