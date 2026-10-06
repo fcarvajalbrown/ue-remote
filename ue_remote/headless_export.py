@@ -170,7 +170,7 @@ def main():
             key, _, value = item.partition("=")
             script_args.setdefault(key, []).append(value)
         try:
-            code = run_commandlet(editor_cmd, uproject, args.script, script_args, log_path)
+            code = run_commandlet(editor_cmd, uproject, os.path.abspath(args.script), script_args, log_path)
         finally:
             restore(content)
         print(f"{name}: exit={code} {summary(log_path)}")
