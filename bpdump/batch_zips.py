@@ -13,7 +13,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BPDUMP = os.path.join(HERE, "bpdump.py")
-INCLUDES = ["BP_*", "ABP_*", "WBP_*", "*/Blueprints/*"]
 ENGINES = ["VER_UE5_5", "VER_UE4_27"]
 PER_EXPORT_GB = 1.5
 
@@ -84,9 +83,7 @@ def find_content_roots(dest):
 
 
 def export(source, out, engine):
-    cmd = [sys.executable, BPDUMP, "run", "--source", source, "--out", out, "--engine", engine]
-    for pat in INCLUDES:
-        cmd += ["--include", pat]
+    cmd = [sys.executable, BPDUMP, "run", "--source", source, "--out", out, "--engine", engine, "--blueprints-only"]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     tail = (proc.stdout + proc.stderr).strip().splitlines()[-2:]
     return proc.returncode, " | ".join(tail)

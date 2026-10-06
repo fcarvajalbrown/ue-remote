@@ -51,19 +51,29 @@ def export_one(source, destination, engine):
     return result.returncode == 0 and destination.is_file()
 
 
+def is_blueprint(asset):
+    from bpdump.scan import is_blueprint as header_says_blueprint
+    try:
+        return header_says_blueprint(asset)
+    except OSError:
+        return False
+
+
 def is_included(relative, patterns):
     if not patterns:
         return True
     return any(PurePosixPath(relative.as_posix()).match(pattern) for pattern in patterns)
 
 
-def export_folder(source_root, out_root, engine, force, include=()):
+def export_folder(source_root, out_root, engine, force, include=(), blueprints_only=False):
     verify()
     exported = 0
     failed = []
     for asset in sorted(Path(source_root).rglob("*.uasset")):
         relative = asset.relative_to(source_root).with_suffix(".json")
         if not is_included(relative, include):
+            continue
+        if blueprints_only and not is_blueprint(asset):
             continue
         destination = Path(out_root) / "json" / relative
         if destination.is_file() and not force:

@@ -235,6 +235,12 @@ def game_path(text):
     return text.split(".")[0].rstrip()
 
 
+def is_blueprint(path):
+    with open(path, "rb") as handle:
+        data = handle.read(HEADER_LIMIT)
+    return bool(tag_class(printable_strings(data), "ParentClass"))
+
+
 def describe(path, content_root, with_refs, with_names):
     with open(path, "rb") as handle:
         data = handle.read(HEADER_LIMIT)

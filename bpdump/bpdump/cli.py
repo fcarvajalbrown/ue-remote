@@ -31,6 +31,7 @@ def parse_args(argv):
         step.add_argument("--engine", default=DEFAULT_ENGINE)
         step.add_argument("--force", action="store_true", help="re-export files that already exist")
         step.add_argument("--include", action="append", default=[], help="glob on the relative path, repeatable, for example 'SaveGame/**/*.json'")
+        step.add_argument("--blueprints-only", action="store_true", help="keep only assets whose header names a parent class, whatever their file name")
     summary = sub.add_parser("summarize")
     summary.add_argument("--out", required=True)
     sweep = sub.add_parser("scan", help="identify every .uasset and .umap under a folder without UAssetGUI or the editor, one JSON line per asset")
@@ -50,7 +51,7 @@ def main(argv=None):
     if args.command == "scan":
         return 0 if scan.scan(args.source, args.out, args.include, args.refs, args.names) else 1
     if args.command in ("export", "run"):
-        ok = exporter.export_folder(args.source, args.out, args.engine, args.force, args.include)
+        ok = exporter.export_folder(args.source, args.out, args.engine, args.force, args.include, args.blueprints_only)
         if args.command == "run":
             summarize_folder(args.out)
         return 0 if ok else 1
