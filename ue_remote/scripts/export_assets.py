@@ -19,11 +19,11 @@ def read_arguments():
     return values
 
 
-def meshes_under(root):
+def assets_under(root, class_names):
     registry = unreal.AssetRegistryHelpers.get_asset_registry()
     registry.scan_paths_synchronous([root], True)
     found = []
-    for class_name in ("StaticMesh", "SkeletalMesh"):
+    for class_name in class_names:
         flt = unreal.ARFilter(
             package_paths=[root],
             class_paths=[unreal.TopLevelAssetPath("/Script/Engine", class_name)],
@@ -46,8 +46,9 @@ options.set_editor_property("export_preview_mesh", True)
 
 paths = list(arguments.get("asset", []))
 roots = arguments.get("root", [])
+classes = arguments.get("class", ["StaticMesh", "SkeletalMesh", "AnimSequence"])
 for root in roots:
-    paths += meshes_under(root)
+    paths += assets_under(root, classes)
 
 exported = 0
 failed = 0
