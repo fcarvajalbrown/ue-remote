@@ -55,7 +55,9 @@ def main():
             print(f"{entry['name']}: {candidate} gave a SHA-1 mismatch")
         if data is None:
             raise SystemExit(f"{entry['name']}: no mirror returned the archive.org SHA-1 {entry.get('sha1')}")
-        (args.dest / entry["name"]).write_bytes(data)
+        target = args.dest / entry["name"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
         rows.append({"file": entry["name"], "source": entry.get("source"), "url": url, "bytes": len(data), "sha1": sha1, "sha256": hashlib.sha256(data).hexdigest()})
         print(f"{entry['name']}: {len(data)} bytes, SHA-1 matches")
     manifest = {
