@@ -123,7 +123,7 @@ it. `flat_svg.py` writes a flat SVG map of streets and footprints.
 
 ## meshkit
 
-A few hundred lines of numpy that turn a folder of JSON specs into low-poly meshes, a placement table and a manifest. `parts.build_piece` takes a list of primitives (`box`, `cyl`, `extrude` for any outline including concave ones, `tube`, `wall` with door and window openings, `roof_slope` in shingle or corrugated style, `repeat`) and returns one mesh per group. `write_glb` writes a GLB with flat normals, box-projected UVs and one named material per colour.
+A few hundred lines of numpy that turn a folder of JSON specs into low-poly meshes, a placement table and a manifest. `parts.build_piece` takes a list of primitives (`box`, `cyl`, `extrude` for any outline including concave ones, `tube`, `wall` with door and window openings, `roof_slope` in shingle or corrugated style, `repeat`) and returns one mesh per group. Every part takes `rot` (degrees) and `at`, and an optional `scale` `[x, y, z]` applied before the rotation, which stretches a round `cyl` into an oval one. `write_glb` writes a GLB with flat normals, box-projected UVs and one named material per colour.
 
 `trees.py` builds a tree from numbers: height, trunk radius, where the crown starts, how many whorls and how many branches per whorl, branch length and thickness from the bottom whorl to the top, how steeply branches rise and how far they curl up at the tip, and a list of LOD levels. It returns the trunk and the crown as two meshes, so the trunk can carry collision and the crown can stay without. `examples/minimal/trees.json` holds three growth stages of a monkey puzzle tree (Araucaria araucana), which is the shape it was tuned on. Nothing in the code is specific to that species.
 

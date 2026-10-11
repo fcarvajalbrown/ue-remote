@@ -1,5 +1,7 @@
 import math
 
+import numpy as np
+
 import meshkit as mk
 
 SIDING_PITCH = 0.14
@@ -119,8 +121,9 @@ def build_part(p):
     mesh = BUILDERS[p["t"]](p)
     rotation = list(p.get("rot", [0, 0, 0]))
     rotation[2] += p.get("yaw", 0)
+    matrix = mk.euler_matrix(rotation) @ np.diag([float(value) for value in p.get("scale", [1, 1, 1])])
     placed = mk.Mesh()
-    return placed.include(mesh, mk.euler_matrix(rotation), p.get("at", [0, 0, 0]))
+    return placed.include(mesh, matrix, p.get("at", [0, 0, 0]))
 
 
 def build_piece(spec):
